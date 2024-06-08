@@ -84,16 +84,18 @@ export const OldPatientDialog = ({ isOpen, onClose }) => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <List component="nav" aria-label="patient list">
-          {patients.map((patient) => (
-            <ListItem
-              button
-              selected={selectedPatient === patient.name} // Assuming the backend returns an object with a name property
-              onClick={() => setSelectedPatient(patient)} // Adjust if necessary
-              key={patient._id} // Assuming each patient object has a unique _id property
-            >
-              <ListItemText primary={patient.name} />
-            </ListItem>
-          ))}
+          {patients.map((patient) => {
+            return (
+                <ListItem
+                    button
+                    selected={selectedPatient === patient.name}
+                    onClick={() => setSelectedPatient(patient)}
+                    key={patient._id} // Assuming each patient object has a unique _id property
+                >
+                  <ListItemText primary={`${patient.name} - ${patient.mobile_number}`} />
+                </ListItem>
+            );
+          })}
         </List>
       </DialogContent>
       <DialogActions>
