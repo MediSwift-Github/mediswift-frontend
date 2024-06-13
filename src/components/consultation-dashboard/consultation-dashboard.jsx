@@ -57,7 +57,7 @@ const ConsultationDashboard = () => {
 
   // Function to stop recording and send audio to the backend
   const stopRecording = () => {
-    return new Promise((resolve, reject) => { // Add Promise definition
+    return new Promise((resolve, reject) => {
       if (mediaRecorder) {
         const finalChunkPromise = new Promise((resolveChunk) => {
           mediaRecorder.ondataavailable = (event) => {
@@ -71,47 +71,37 @@ const ConsultationDashboard = () => {
           };
         });
 
-        mediaRecorder.stop(); // This will trigger the ondataavailable one last time
+        mediaRecorder.stop();
         setRecording(false);
-        mediaRecorder.stream.getTracks().forEach((track) => track.stop()); // Stop the media stream
+        mediaRecorder.stream.getTracks().forEach((track) => {
+          track.stop();
+        });
 
         finalChunkPromise.then((finalChunks) => {
-          const audioBlob = new Blob(finalChunks, { type: "audio/mp3" });
-
-          // Create FormData to send the blob
+          const audioBlob = new Blob(finalChunks, { type: 'audio/mp3' });
           const formData = new FormData();
           formData.append("audioFile", audioBlob, "recording.mp3");
           formData.append("patientId", patientId);
           formData.append("summaryDate", summaryDate);
 
-          // Add any other metadata you might need to send
-
-          // Use fetch to send the audio blob to your server
           fetch(`${API_URL}/api/audio/upload`, {
             method: "POST",
             body: formData,
           })
-              .then((response) => {
-                if (!response.ok) {
-                  throw new Error("Network response was not ok");
-                }
-                return response.json();
-              })
+              .then((response) => response.json())
               .then((data) => {
-                // console.log("Success:", data);
-                // Handle success, maybe set some state to show the upload was successful
-                setRecording(false); // Move this line here to ensure state is updated only after successful transcription
-                resolve(data); // Resolve the promise with the data from the server
+                if (data.message === 'Audio file uploaded, transcribed, and transcription saved successfully.') {
+                  resolve(data);
+                } else {
+                  throw new Error('Failed to save transcription.');
+                }
               })
               .catch((error) => {
-                // console.error("Error:", error);
-                // Handle error, maybe set some state to show the upload failed
-                setRecording(false); // Move this line here to ensure state is updated even if there is an error
-                reject(error); // Reject the promise with the error
+                reject(error);
               });
         });
       } else {
-        reject(new Error("No mediaRecorder found")); // Handle case where mediaRecorder is not defined
+        reject(new Error("No mediaRecorder found"));
       }
     });
   };
