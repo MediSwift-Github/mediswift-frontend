@@ -21,6 +21,8 @@ const LoginPage = () => {
         { username, password },
         { withCredentials: true }
       );
+      // This will give you token
+      // console.log("response.token");
       if (response.data.message === "Authentication successful") {
         // Check the role and navigate accordingly
         if (response.data.role === "doctor") {
