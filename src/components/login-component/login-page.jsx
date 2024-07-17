@@ -6,40 +6,44 @@ import logo from "./MediSwift.png";
 import api from "../../api";
 import { IconButton, InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { jwtDecode } from "jwt-decode";
+import { setHospitalId } from '../../features/selectHospital/hospitalSlice';
+import {useDispatch} from "react-redux";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // Moved useDispatch to the top-level of the component
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await api.post(
-        "/api/login",
-        { username, password },
-        { withCredentials: true }
-      );
-      // This will give you token
-      // console.log("response.token");
+      const response = await api.post("/api/login", { username, password });
       if (response.data.message === "Authentication successful") {
-        // Check the role and navigate accordingly
-        if (response.data.role === "doctor") {
-          navigate("/doctor-dashboard");
-        } else if (response.data.role === "receptionist") {
-          navigate("/frontdesk-dashboard");
+        const { token, role } = response.data;
+        localStorage.setItem("jwtToken", token);
+
+        if (token) {
+          const decodedToken = jwtDecode(token);
+          const hospitalId = decodedToken.hospital_id;
+          dispatch(setHospitalId(hospitalId));  // Dispatch the action to set hospitalId
+
+          if (role === "doctor") {
+            navigate("/doctor-dashboard");
+          } else if (role === "receptionist") {
+            navigate("/frontdesk-dashboard");
+          } else {
+            console.log("User role not recognized or user does not have permissions.");
+          }
         } else {
-          // Handle other roles or default case
-          // console.log(
-          //   "User role not recognized or user does not have permissions."
-          // );
+          console.log("Token is invalid or undefined");
         }
       } else {
         alert("Authentication failed. Please try again.");
       }
     } catch (error) {
-      // console.error("Login error:", error);
       alert("An error occurred. Please try again later.");
     }
   };
