@@ -8,12 +8,15 @@ import {
   DialogActions,
   CircularProgress,
 } from "@mui/material";
+import {useSelector} from "react-redux";
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
 
 export const NewPatientDialog = ({ isOpen, onClose }) => {
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [loading, setLoading] = useState(false); // Add a loading state
+
+  const hospitalId = useSelector((state) => state.hospital.hospitalId); // Add this line
 
   const handleAddPatient = async () => {
     setLoading(true); // Set loading to true when the request starts
@@ -43,6 +46,7 @@ export const NewPatientDialog = ({ isOpen, onClose }) => {
         name,
         mobile_number: formattedContact,
         medical_history: [], // You can initially send an empty array or omit this if your backend handles it
+        hospitalId
       };
 
       // Make the POST request to the server to add a new patient
@@ -67,7 +71,7 @@ export const NewPatientDialog = ({ isOpen, onClose }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ patientId: addedPatient._id }),
+          body: JSON.stringify({ patientId: addedPatient._id, hospitalId }), // Include hospitalId here
         });
 
         if (queueResponse.ok) {
