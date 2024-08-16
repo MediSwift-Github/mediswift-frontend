@@ -12,6 +12,7 @@ import {
 import axios from "axios"; // Make sure to install axios if you haven't
 import io from "socket.io-client";
 import api from "../../../api";
+import {useSelector} from "react-redux";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
 
@@ -20,12 +21,13 @@ const socket = io.connect(API_URL);
 export const PatientTable = () => {
   // State to store the fetched data
   const [rows, setRows] = useState([]);
+  const hospitalId = useSelector((state) => state.hospital.hospitalId); // Get hospitalId from Redux state
 
   useEffect(() => {
     // Function to fetch data from the endpoint
     const fetchData = async () => {
       try {
-        const response = await api.get("/api/queue");
+        const response = await api.get(`/api/queue?hospitalId=${hospitalId}`); // Include hospitalId in the query
         const queueData = response.data.map((entry) => ({
           id: entry._id,
           name: entry.patientName,
@@ -63,7 +65,7 @@ export const PatientTable = () => {
     return () => {
       socket.off("queueUpdate");
     };
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, [hospitalId]); // Include hospitalId as a dependency to refetch data when it changes
 
   return (
     // <TableContainer component={Paper} sx={{ maxWidth: "100%" }}>

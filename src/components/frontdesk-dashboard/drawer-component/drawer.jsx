@@ -23,6 +23,7 @@ import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import GroupRemoveIcon from "@mui/icons-material/GroupRemove";
+import { useSelector } from "react-redux"; // Import useSelector to get hospitalId from Redux store
 
 import "./drawer.css";
 import Typography from "@mui/material/Typography";
@@ -48,6 +49,8 @@ export const DrawerComponent = ({
 }) => {
   const [isNewPatientDialogOpen, setNewPatientDialogOpen] = useState(false);
   const [isOldPatientDialogOpen, setOldPatientDialogOpen] = useState(false);
+  const hospitalId = useSelector((state) => state.hospital.hospitalId); // Get hospitalId from Redux store
+
   const [isDeletePatientDialogOpen, setDeletePatientDialogOpen] =
     useState(false);
 
@@ -70,9 +73,12 @@ export const DrawerComponent = ({
   const handleClearQueue = async () => {
     try {
       setActiveButton("clearQueue");
-      await fetch(`${API_URL}/api/queue/remove?clearAll=true`, {
-        method: "DELETE",
-      });
+      await fetch(
+        `${API_URL}/api/queue/remove?clearAll=true&hospitalId=${hospitalId}`,
+        {
+          method: "DELETE",
+        }
+      );
       // console.log("Queue cleared successfully");
       // Force a page reload to ensure the UI is in sync with the back end
       window.location.reload();

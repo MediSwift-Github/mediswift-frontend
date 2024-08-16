@@ -15,7 +15,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import axios from "axios"; // Make sure to install axios if you haven't
-import { useDispatch } from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import { selectPatient } from "../../features/selectedPatient/patientSlice";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import api from "../../api";
@@ -37,6 +37,7 @@ const DoctorDashboard = () => {
   const socket = io(API_URL, { autoConnect: false }); // Initialize the socket with autoConnect set to false
   const location = useLocation();
   const [anchorEls, setAnchorEls] = useState({});
+  const hospitalId = useSelector((state) => state.hospital.hospitalId); // Get hospitalId from Redux store
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -75,7 +76,7 @@ const DoctorDashboard = () => {
       // Function to fetch queue data
       const fetchQueue = async () => {
           try {
-              const response = await api.get("/api/queue");
+              const response = await api.get(`/api/queue?hospitalId=${hospitalId}`); // Include hospitalId in the query
               const sortedQueue = response.data
                   .map(patient => ({
                       ...patient,
@@ -106,7 +107,7 @@ const DoctorDashboard = () => {
       socket.off("queueUpdate");
       socket.disconnect(); // Disconnect the socket on component unmount
     };
-  }, []); // Empty dependency array ensures this runs once on mount
+  }, [hospitalId]); // Include hospitalId as a dependency to refetch data when it changes
 
   const handleStartConsultation = (patient) => {
     // console.log("Starting consultation for:", patient); // Log the patient details

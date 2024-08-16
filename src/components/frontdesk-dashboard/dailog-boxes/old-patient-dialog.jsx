@@ -12,19 +12,20 @@ import {
 } from "@mui/material";
 import axios from "axios"; // Ensure you have axios installed
 import api from "../../../api";
+import {useSelector} from "react-redux";
 export const OldPatientDialog = ({ isOpen, onClose }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [patients, setPatients] = useState([]); // Updated to hold fetched data
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const hospitalId = useSelector((state) => state.hospital.hospitalId); // Get hospitalId from Redux store
+
 
   useEffect(() => {
     const fetchPatients = async () => {
       if (searchTerm.trim()) {
         // Only search if searchTerm is not empty
         try {
-          const response = await api.get(
-            `/api/searchpatient?name=${searchTerm}`
-          );
+          const response = await api.get(`/api/searchpatient?name=${searchTerm}&hospitalId=${hospitalId}`); // Include hospitalId in the query
           setPatients(response.data); // Update state with fetched data
         } catch (error) {
           // console.error("Error fetching patients:", error);
@@ -40,13 +41,14 @@ export const OldPatientDialog = ({ isOpen, onClose }) => {
     }, 500); // Delay fetching to debounce rapid input
 
     return () => clearTimeout(delayDebounceFn); // Cleanup timeout on unmount or next effect run
-  }, [searchTerm]); // Dependency array, effect runs when searchTerm changes
+  }, [searchTerm, hospitalId]); // Dependency array, effect runs when searchTerm or hospitalId changes
 
   const handleSelectPatient = async () => {
     if (selectedPatient && selectedPatient._id) {
       try {
         const response = await api.post("/api/queue/add", {
           patientId: selectedPatient._id,
+          hospitalId // Include hospitalId
         });
 
         if (response.status === 201) {

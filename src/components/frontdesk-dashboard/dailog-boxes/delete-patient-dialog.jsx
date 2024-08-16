@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, List, ListItem, ListItemText, Button } from "@mui/material";
+import {useSelector} from "react-redux";
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
 export const DeletePatientDialog = ({ isOpen, onClose }) => {
     const [patients, setPatients] = useState([]);
+    const hospitalId = useSelector((state) => state.hospital.hospitalId); // Get hospitalId from Redux store
 
     useEffect(() => {
         const fetchPatients = async () => {
             try {
-                const response = await fetch(`${API_URL}/api/queue`);
+                const response = await fetch(`${API_URL}/api/queue?hospitalId=${hospitalId}`); // Include hospitalId in the query
                 const data = await response.json();
                 setPatients(data); // Assuming the API returns an array of patient objects
             } catch (error) {
@@ -20,11 +22,11 @@ export const DeletePatientDialog = ({ isOpen, onClose }) => {
         if (isOpen) {
             fetchPatients();
         }
-    }, [isOpen]); // Fetch patients only when the dialog is opened
+    }, [isOpen, hospitalId]); // Fetch patients only when the dialog is opened and hospitalId changes
 
     const handleDeletePatient = async (patientId) => {
         try {
-            await fetch(`${API_URL}/api/queue/remove?patientId=${patientId}`, { method: 'DELETE' });
+            await fetch(`${API_URL}/api/queue/remove?patientId=${patientId}&hospitalId=${hospitalId}`, { method: 'DELETE' }); // Include hospitalId in the delete request
             // console.log('Patient deleted successfully');
             onClose(); // Close the dialog and rely on websocket for UI update
         } catch (error) {
