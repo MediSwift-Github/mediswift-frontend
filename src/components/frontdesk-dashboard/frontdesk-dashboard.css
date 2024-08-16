@@ -9,6 +9,10 @@
   /* add more styling as needed */
 }
 
+.containerWrapper {
+  background: linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232));
+}
+
 /* frontdesk-dashboard.css */
 /* .patientListWrapper {
   margin-top: 54px;
@@ -17,3 +21,16 @@
 /* backdrop-filter: saturate(200%) blur(1.875rem); */
 
 /* Continue styling other elements as necessary */
+
+/* 
+@media only screen and (max-width: 1050px) {
+  .drawerWrapper {
+    display: none;
+  }
+} */
+
+@media only screen and (max-width: 1050px) {
+  .patientListWrapper {
+    width: 100% !important;
+  }
+}

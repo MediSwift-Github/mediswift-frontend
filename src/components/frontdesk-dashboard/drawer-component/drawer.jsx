@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -38,17 +38,38 @@ const DrawerPaper = styled(Drawer)(({ theme }) => ({
   },
 }));
 
-export const DrawerComponent = () => {
+export const DrawerComponent = ({
+  newPatient,
+  oldPatient,
+  deletePatient,
+  setNewPatientVisibility,
+  setOldPatientVisibility,
+  setDeletePatientVisibility,
+}) => {
   const [isNewPatientDialogOpen, setNewPatientDialogOpen] = useState(false);
   const [isOldPatientDialogOpen, setOldPatientDialogOpen] = useState(false);
   const [isDeletePatientDialogOpen, setDeletePatientDialogOpen] =
     useState(false);
 
-  const handleNewPatientClick = () => setNewPatientDialogOpen(true);
-  const handleOldPatientClick = () => setOldPatientDialogOpen(true);
-  const handleDeletePatientClick = () => setDeletePatientDialogOpen(true);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [activeButton, setActiveButton] = useState(null);
+
+  const handleNewPatientClick = () => {
+    setNewPatientDialogOpen(true);
+    setActiveButton("newPatient");
+  };
+  const handleOldPatientClick = () => {
+    setOldPatientDialogOpen(true);
+    setActiveButton("oldPatient");
+  };
+  const handleDeletePatientClick = () => {
+    setDeletePatientDialogOpen(true);
+    setActiveButton("deletePatient");
+  };
+
   const handleClearQueue = async () => {
     try {
+      setActiveButton("clearQueue");
       await fetch(`${API_URL}/api/queue/remove?clearAll=true`, {
         method: "DELETE",
       });
@@ -61,8 +82,43 @@ export const DrawerComponent = () => {
     }
   };
 
+  const handleClose = () => {
+    setActiveButton(null);
+    setNewPatientVisibility(false);
+    setOldPatientVisibility(false);
+    setDeletePatientVisibility(false);
+  };
+
+  useEffect(() => {
+    if (newPatient) {
+      setNewPatientDialogOpen(true);
+    }
+    if (oldPatient) {
+      setOldPatientDialogOpen(true);
+    }
+    if (deletePatient) {
+      setDeletePatientDialogOpen(true);
+    }
+  }, [newPatient, oldPatient, deletePatient]);
+
+  useEffect(() => {
+    // Function to update the state with the current window width
+    const handleResize = () => setWindowWidth(window.innerWidth);
+
+    // Add event listener for window resize
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup the event listener when the component is unmounted
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
-    <DrawerPaper variant="permanent" anchor="left" className="mainDrawer">
+    <DrawerPaper
+      variant="permanent"
+      anchor="left"
+      className="mainDrawer"
+      style={{ display: windowWidth < 1050 && "none" }}
+    >
       {/* <Toolbar /> */}
       <Box gap={4} p={2} className="navbarWrapper">
         <Grid className="mainLogo">
@@ -77,9 +133,8 @@ export const DrawerComponent = () => {
         <List>
           <ListItem disablePadding>
             <Button
-              className="currentNav"
-              fullWidth
-              variant="contained"
+              className={activeButton === "newPatient" ? "currentNav" : ""}
+              variant={activeButton === "newPatient" && "contained"}
               onClick={handleNewPatientClick}
             >
               <ListItemIcon style={{ minWidth: "35px" }}>
@@ -91,7 +146,11 @@ export const DrawerComponent = () => {
             </Button>
           </ListItem>
           <ListItem disablePadding>
-            <Button fullWidth onClick={handleOldPatientClick}>
+            <Button
+              className={activeButton === "oldPatient" ? "currentNav" : ""}
+              variant={activeButton === "oldPatient" && "contained"}
+              onClick={handleOldPatientClick}
+            >
               <ListItemIcon style={{ minWidth: "35px" }}>
                 <SearchIcon style={{ color: "white" }} />
               </ListItemIcon>
@@ -101,7 +160,11 @@ export const DrawerComponent = () => {
             </Button>
           </ListItem>
           <ListItem disablePadding>
-            <Button fullWidth onClick={handleDeletePatientClick}>
+            <Button
+              className={activeButton === "deletePatient" ? "currentNav" : ""}
+              variant={activeButton === "deletePatient" && "contained"}
+              onClick={handleDeletePatientClick}
+            >
               <ListItemIcon style={{ minWidth: "35px" }}>
                 <DeleteOutlineIcon style={{ color: "white" }} />
               </ListItemIcon>
@@ -111,7 +174,11 @@ export const DrawerComponent = () => {
             </Button>
           </ListItem>
           <ListItem disablePadding>
-            <Button fullWidth onClick={handleClearQueue}>
+            <Button
+              className={activeButton === "clearQueue" ? "currentNav" : ""}
+              variant={activeButton === "clearQueue" && "contained"}
+              onClick={handleClearQueue}
+            >
               <ListItemIcon style={{ minWidth: "35px" }}>
                 <GroupRemoveIcon style={{ color: "white" }} />
               </ListItemIcon>
@@ -122,7 +189,7 @@ export const DrawerComponent = () => {
           </ListItem>
         </List>
         {/* <Box classNam="buyPremium">
-          <Button fullWidth variant="contained">
+          <Button  variant="contained">
             <ListItemIcon style={{ minWidth: "35px" }}>
               <InboxIcon style={{ color: "white" }} />
             </ListItemIcon>
@@ -133,15 +200,24 @@ export const DrawerComponent = () => {
         </Box> */}
         <NewPatientDialog
           isOpen={isNewPatientDialogOpen}
-          onClose={() => setNewPatientDialogOpen(false)}
+          onClose={() => {
+            setNewPatientDialogOpen(false);
+            handleClose();
+          }}
         />
         <OldPatientDialog
           isOpen={isOldPatientDialogOpen}
-          onClose={() => setOldPatientDialogOpen(false)}
+          onClose={() => {
+            setOldPatientDialogOpen(false);
+            handleClose();
+          }}
         />
         <DeletePatientDialog
           isOpen={isDeletePatientDialogOpen}
-          onClose={() => setDeletePatientDialogOpen(false)}
+          onClose={() => {
+            setDeletePatientDialogOpen(false);
+            handleClose();
+          }}
         />
       </Box>
     </DrawerPaper>
