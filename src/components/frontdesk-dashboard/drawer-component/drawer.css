@@ -25,7 +25,7 @@
   height: 48px;
   display: flex;
   justify-content: left;
-  background: linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232));
+  /* background: linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232)); */
 }
 
 .navbarWrapper > ul > li > button {
@@ -33,6 +33,7 @@
   display: flex;
   justify-content: left;
   color: white;
+  width: 100%;
 }
 
 .navbarWrapper > ul > li > button:hover {
