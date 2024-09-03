@@ -1,0 +1,19 @@
+.table-container {
+    margin-bottom: 24px;
+}
+
+.table-cell {
+    vertical-align: middle;
+}
+
+.table-cell .MuiTextField-root {
+    width: 100%;
+}
+
+.table-cell .MuiFormHelperText-root {
+    margin-top: 4px;
+}
+
+.table-cell .MuiIconButton-root {
+    margin-left: 8px;
+}

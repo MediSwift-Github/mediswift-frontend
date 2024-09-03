@@ -6,6 +6,7 @@ import "react-quill/dist/quill.snow.css";
 import { useNavigate } from "react-router-dom";
 import { CircularProgress } from "@mui/material";
 import "./documentation-page.css";
+import PrescriptionTable from "./prescription/prescription-table";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
 
@@ -13,11 +14,36 @@ const DocumentationPage = () => {
   const [value, setValue] = useState(0); // Tab selection state
   const [healthRecordContent, setHealthRecordContent] = useState({ ops: [] }); // Editor content for Health Record
   const [patientHandoutContent, setPatientHandoutContent] = useState(""); // Editor content for Patient Handout
-
+  const [prescriptions, setPrescriptions] = useState([
+    { srNo: 1, drug: "", dosagePerDay: "", days: "", frequency: "", notes: "" },
+  ]);
   const selectedPatient = useSelector((state) => state.patient.selectedPatient);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+
+  const addPrescriptionRow = () => {
+    // Only add a new row if the last row has some data filled in
+    const lastPrescription = prescriptions[prescriptions.length - 1];
+    if (lastPrescription.drug || lastPrescription.dosagePerDay || lastPrescription.days || lastPrescription.frequency || lastPrescription.notes) {
+      setPrescriptions([
+        ...prescriptions,
+        { srNo: prescriptions.length + 1, drug: "", dosagePerDay: "", days: "", frequency: "", notes: "" },
+      ]);
+    }
+  };
+
+
+  const handlePrescriptionChange = (index, field, value) => {
+    const updatedPrescriptions = prescriptions.map((prescription, i) =>
+        i === index ? { ...prescription, [field]: value } : prescription
+    );
+    setPrescriptions(updatedPrescriptions);
+  };
+
   const formatToJsonDelta = (data) => {
     const ops = []; // Initialize Delta operations array
 
@@ -98,9 +124,7 @@ const DocumentationPage = () => {
     getSummary();
   }, [selectedPatient]);
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
+
 
   const saveHealthRecord = async () => {
     // console.log("Saving Health Record:", healthRecordContent); // Log current state
@@ -110,39 +134,71 @@ const DocumentationPage = () => {
       alert("No patient selected!");
       return;
     }
-
+    // Filter out empty prescriptions
+    const filteredPrescriptions = prescriptions.filter(prescription =>
+        prescription.drug || prescription.dosagePerDay || prescription.days || prescription.frequency || prescription.notes
+    );
     const summaryDate = new Date().toISOString().split("T")[0];
 
     // Prepare the payload with the patient ID and health record content
-    const payload = {
+    // Prepare the payload with the patient ID and health record content
+    const healthRecordPayload = {
       patientId: selectedPatient.patientId,
       healthRecord: healthRecordContent,
       summaryDate: summaryDate,
     };
 
+    const prescriptionPayload = {
+      patientId: selectedPatient.patientId,
+      prescriptions: filteredPrescriptions, // Use filtered prescriptions
+      summaryDate: summaryDate,
+    };
+
     try {
-      const response = await fetch("/api/saveHealthRecord", {
+      // First, save the health record
+      const healthRecordResponse = await fetch("/api/saveHealthRecord", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload), // Send payload as JSON string
+        body: JSON.stringify(healthRecordPayload), // Send payload as JSON string
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        // console.log("Health Record saved successfully:", result);
-      } else {
+      if (!healthRecordResponse.ok) {
         // Handle non-2xx responses
-        // console.error("Failed to save Health Record:", response.statusText);
+        console.error("Failed to save Health Record:", healthRecordResponse.statusText);
+        return;
       }
+
+      // Then, save the prescriptions
+      const prescriptionResponse = await fetch(`${API_URL}/api/savePrescriptions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(prescriptionPayload),
+      });
+
+      if (!prescriptionResponse.ok) {
+        // Handle non-2xx responses
+        console.error("Failed to save Prescriptions:", prescriptionResponse.statusText);
+        return;
+      }
+
+      const healthRecordResult = await healthRecordResponse.json();
+      const prescriptionResult = await prescriptionResponse.json();
+
+      console.log("Health Record saved successfully:", healthRecordResult);
+      console.log("Prescriptions saved successfully:", prescriptionResult);
+
     } catch (error) {
-      // console.error("Error saving Health Record:", error);
+      console.error("Error saving Health Record or Prescriptions:", error);
     }
 
     // Optionally switch to the Patient Handout tab
     setValue(1);
   };
+
 
   const sendPatientHandout = async () => {
     if (!selectedPatient) {
@@ -225,37 +281,47 @@ const DocumentationPage = () => {
       </Paper>
 
       {value === 0 && (
-        <div
-          style={{
-            position: "relative",
-            height: "300px",
-            marginBottom: "50px",
-          }}
-        >
-          <ReactQuill
-            theme="snow"
-            value={healthRecordContent}
-            onChange={setHealthRecordContent}
-            style={{ height: "100%" }}
-          />
-          {isLoading && (
+          <>
+            {/* Prescription Table */}
+            <PrescriptionTable
+                prescriptions={prescriptions}
+                handlePrescriptionChange={handlePrescriptionChange}
+                addPrescriptionRow={addPrescriptionRow}
+            />
+
+            {/* Health Record Editor */}
             <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "rgba(255, 255, 255, 0.5)", // Adding a slight white overlay
-              }}
+                style={{
+                  position: "relative",
+                  height: "300px",
+                  marginBottom: "50px",
+                }}
             >
-              <CircularProgress />
+              <ReactQuill
+                  theme="snow"
+                  value={healthRecordContent}
+                  onChange={setHealthRecordContent}
+                  style={{ height: "100%" }}
+              />
+              {isLoading && (
+                  <div
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "rgba(255, 255, 255, 0.5)", // Adding a slight white overlay
+                      }}
+                  >
+                    <CircularProgress />
+                  </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
       )}
 
       {value === 1 && (
