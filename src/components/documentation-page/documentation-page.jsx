@@ -127,34 +127,25 @@ const DocumentationPage = () => {
 
 
   const saveHealthRecord = async () => {
-    // console.log("Saving Health Record:", healthRecordContent); // Log current state
+    console.log("Saving Health Record with payload:", healthRecordPayload);
 
-    // Ensure there is a selected patient
     if (!selectedPatient) {
       alert("No patient selected!");
       return;
     }
-    // Filter out empty prescriptions
-    const filteredPrescriptions = prescriptions.filter(prescription =>
-        prescription.drug || prescription.dosagePerDay || prescription.days || prescription.frequency || prescription.notes
-    );
+
     const summaryDate = new Date().toISOString().split("T")[0];
 
-    // Prepare the payload with the patient ID and health record content
-    // Prepare the payload with the patient ID and health record content
     const healthRecordPayload = {
       patientId: selectedPatient.patientId,
       healthRecord: healthRecordContent,
       summaryDate: summaryDate,
     };
 
-    const prescriptionPayload = {
-      patientId: selectedPatient.patientId,
-      prescriptions: filteredPrescriptions, // Use filtered prescriptions
-      summaryDate: summaryDate,
-    };
-
     try {
+      // Log the fetch request details
+      console.log("Sending POST request to /api/saveHealthRecord with payload:", healthRecordPayload);
+
       // First, save the health record
       const healthRecordResponse = await fetch("/api/saveHealthRecord", {
         method: "POST",
@@ -164,39 +155,19 @@ const DocumentationPage = () => {
         body: JSON.stringify(healthRecordPayload), // Send payload as JSON string
       });
 
+      // Log the response status
+      console.log("Health Record Response:", healthRecordResponse);
+
       if (!healthRecordResponse.ok) {
-        // Handle non-2xx responses
         console.error("Failed to save Health Record:", healthRecordResponse.statusText);
         return;
       }
 
-      // Then, save the prescriptions
-      const prescriptionResponse = await fetch(`${API_URL}/api/savePrescriptions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(prescriptionPayload),
-      });
-
-      if (!prescriptionResponse.ok) {
-        // Handle non-2xx responses
-        console.error("Failed to save Prescriptions:", prescriptionResponse.statusText);
-        return;
-      }
-
       const healthRecordResult = await healthRecordResponse.json();
-      const prescriptionResult = await prescriptionResponse.json();
-
       console.log("Health Record saved successfully:", healthRecordResult);
-      console.log("Prescriptions saved successfully:", prescriptionResult);
-
     } catch (error) {
-      console.error("Error saving Health Record or Prescriptions:", error);
+      console.error("Error saving Health Record:", error);
     }
-
-    // Optionally switch to the Patient Handout tab
-    setValue(1);
   };
 
 
