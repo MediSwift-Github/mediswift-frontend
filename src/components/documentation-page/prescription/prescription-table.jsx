@@ -2,17 +2,18 @@ import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableRow, IconButton, TextField } from "@mui/material";
 import { AddCircle } from "@mui/icons-material";
 import "./prescription-table.css"
+
 const PrescriptionTable = ({ prescriptions, handlePrescriptionChange, addPrescriptionRow }) => {
     return (
         <Table sx={{ mb: 3 }}>
             <TableHead>
                 <TableRow>
                     <TableCell>Sr No</TableCell>
-                    <TableCell>Drug</TableCell>
-                    <TableCell>Dosage per Day</TableCell>
-                    <TableCell>Number of Days</TableCell>
-                    <TableCell>Frequency</TableCell>
-                    <TableCell>Notes</TableCell>
+                    <TableCell>Medication</TableCell>
+                    <TableCell>Dosage</TableCell>
+                    <TableCell>Times per Day</TableCell>
+                    <TableCell>No. of Days</TableCell>
+                    <TableCell>Instructions</TableCell>
                     <TableCell></TableCell>
                 </TableRow>
             </TableHead>
@@ -38,18 +39,18 @@ const PrescriptionTable = ({ prescriptions, handlePrescriptionChange, addPrescri
                         </TableCell>
                         <TableCell>
                             <TextField
-                                value={prescription.days}
-                                onChange={(e) => handlePrescriptionChange(index, "days", e.target.value)}
-                                error={!prescription.days}
-                                helperText={!prescription.days && "Required"}
-                            />
-                        </TableCell>
-                        <TableCell>
-                            <TextField
                                 value={prescription.frequency}
                                 onChange={(e) => handlePrescriptionChange(index, "frequency", e.target.value)}
                                 error={!prescription.frequency}
                                 helperText={!prescription.frequency && "Required"}
+                            />
+                        </TableCell>
+                        <TableCell>
+                            <TextField
+                                value={prescription.days}
+                                onChange={(e) => handlePrescriptionChange(index, "days", e.target.value)}
+                                error={!prescription.days}
+                                helperText={!prescription.days && "Required"}
                             />
                         </TableCell>
                         <TableCell>
