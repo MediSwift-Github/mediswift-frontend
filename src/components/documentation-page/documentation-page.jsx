@@ -36,13 +36,16 @@ const DocumentationPage = () => {
     }
   };
 
-
-  const handlePrescriptionChange = (index, field, value) => {
-    const updatedPrescriptions = prescriptions.map((prescription, i) =>
-        i === index ? { ...prescription, [field]: value } : prescription
+  const handlePrescriptionChange = (index, updates) => {
+    setPrescriptions((prevPrescriptions) =>
+        prevPrescriptions.map((prescription, i) =>
+            i === index ? { ...prescription, ...updates } : prescription
+        )
     );
-    setPrescriptions(updatedPrescriptions);
   };
+
+
+
 
   const formatToJsonDelta = (data) => {
     const ops = []; // Initialize Delta operations array
