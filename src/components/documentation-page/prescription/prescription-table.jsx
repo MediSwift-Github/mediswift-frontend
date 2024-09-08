@@ -23,13 +23,17 @@ const PrescriptionTable = ({
   const [medicineTypes, setMedicineTypes] = useState({}); // Store the medicine types for each row
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
 
+  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
   const fetchSuggestions = async (query, index) => {
     if (!query) return;
     setLoading(true);
     setActiveIndex(index); // Track the active row for suggestions
 
     try {
-      const response = await fetch(`/api/autocomplete?query=${query}`);
+      const response = await fetch(
+        `${API_URL}/api/autocomplete?query=${query}`
+      );
       const data = await response.json();
       setSuggestions(data);
     } catch (error) {
