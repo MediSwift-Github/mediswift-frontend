@@ -31,6 +31,7 @@
 
 @media only screen and (max-width: 1050px) {
   .patientListWrapper {
-    width: 100% !important;
+    /* width: 100% !important; */
+    width: calc(100% - 20px) !important;
   }
 }

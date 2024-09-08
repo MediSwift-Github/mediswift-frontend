@@ -302,7 +302,7 @@ const FrontDeskDashboard = () => {
         component="main"
         fullWidth
         style={{
-          width: windowWidth < 1050 ? "calc(100% - 22%)" : "100%",
+          width: windowWidth < 1050 ? "calc(100% - 22%)" : "auto",
           marginLeft:
             windowWidth < 1050 ? "calc(100% - 99%)" : "calc(100% - 79%)",
         }}
